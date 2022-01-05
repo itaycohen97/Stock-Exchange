@@ -1,0 +1,90 @@
+.text-focus-in {
+	-webkit-animation: text-focus-in 1s cubic-bezier(0.550, 0.085, 0.680, 0.530) both;
+	        animation: text-focus-in 1s cubic-bezier(0.550, 0.085, 0.680, 0.530) both;
+}
+
+.text-focus-in-1s {
+	-webkit-animation: text-focus-in 1s cubic-bezier(0.550, 0.085, 0.680, 0.530) 1s both;
+	        animation: text-focus-in 1s cubic-bezier(0.550, 0.085, 0.680, 0.530) 1s both;
+}
+.text-focus-in-2s {
+	-webkit-animation: text-focus-in 1s cubic-bezier(0.550, 0.085, 0.680, 0.530) 2s both;
+	        animation: text-focus-in 1s cubic-bezier(0.550, 0.085, 0.680, 0.530) 2s both;
+}
+.text-focus-out-1s {
+	-webkit-animation: text-focus-in 1s cubic-bezier(0.550, 0.085, 0.680, 0.530) reverse 1s both;
+	        animation: text-focus-in 1s cubic-bezier(0.550, 0.085, 0.680, 0.530) reverse 1s both;
+}
+
+.scale-in-ver-bottom {
+	-webkit-animation: scale-in-ver-bottom 0.5s cubic-bezier(0.250, 0.460, 0.450, 0.940) both;
+	        animation: scale-in-ver-bottom 0.5s cubic-bezier(0.250, 0.460, 0.450, 0.940) both;
+}
+
+/**
+ * ----------------------------------------
+ * animation text-focus-in
+ * ----------------------------------------
+ */
+@-webkit-keyframes text-focus-in {
+  0% {
+    -webkit-filter: blur(12px);
+            filter: blur(12px);
+    opacity: 0;
+  }
+  100% {
+    -webkit-filter: blur(0px);
+            filter: blur(0px);
+    opacity: 1;
+  }
+}
+@keyframes text-focus-in {
+  0% {
+    -webkit-filter: blur(12px);
+            filter: blur(12px);
+    opacity: 0;
+  }
+  100% {
+    -webkit-filter: blur(0px);
+            filter: blur(0px);
+    opacity: 1;
+  }
+}
+
+/**
+ * ----------------------------------------
+ * animation scale-in-ver-bottom
+ * ----------------------------------------
+ */
+@-webkit-keyframes scale-in-ver-bottom {
+  0% {
+    -webkit-transform: scaleY(0);
+            transform: scaleY(0);
+    -webkit-transform-origin: 0% 100%;
+            transform-origin: 0% 100%;
+    opacity: 1;
+  }
+  100% {
+    -webkit-transform: scaleY(1);
+            transform: scaleY(1);
+    -webkit-transform-origin: 0% 100%;
+            transform-origin: 0% 100%;
+    opacity: 1;
+  }
+}
+@keyframes scale-in-ver-bottom {
+  0% {
+    -webkit-transform: scaleY(0);
+            transform: scaleY(0);
+    -webkit-transform-origin: 0% 100%;
+            transform-origin: 0% 100%;
+    opacity: 1;
+  }
+  100% {
+    -webkit-transform: scaleY(1);
+            transform: scaleY(1);
+    -webkit-transform-origin: 0% 100%;
+            transform-origin: 0% 100%;
+    opacity: 1;
+  }
+}
