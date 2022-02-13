@@ -21,19 +21,20 @@
     </div>
 </div>
 <!-- Use any element to open the sidenav -->
-    <div class="d-flex bd-highlight mb-2">
+    <div class="d-flex bd-highlight mb-2 sticky-top shadow-sm" style="background: inherit">
 <span class=" ms-4 mt-2 mb-2" style="font-size:30px;cursor:pointer;z-index: 2000" onclick="toggleNav()">&#9776; InveStock</span>
         <div class="d-none d-md-inline p-2 bd-highlight">{{ session["budget"] }} flow<br>{{ session["stocksmoney"] }} invested</div>
         <div class="p-2 bd-highlight d-inline-block ms-auto">
     <form class="" action="/search" method="post">
     <input type="text" class="search form-control mt-2" id="search" name="search" placeholder="Search">
-        </div>
 </form>
+
 </div>
-            <hr size="5" class="mb-1 hr" noshade>
+                    <hr size="5" class="mb-1 hr" noshade>
+    </div>
 {% if stock %}
      <div class="row justify-content-center">
-         <div class="w-50 d-block text-center">
+         <div class="col-6 d-block text-center search text-white shadow-lg">
          <p class="text-2 m-0">{{ stock['symbol'] }}</p>
          <p class="text-0 m-2">Name: {{ stock['name'] }}</p>
          <p class="text-0 m-2">Price: ${{stock['price']}}</p>
@@ -43,16 +44,27 @@
                  <input value="{{ stock['symbol'] }}" name="symbol" style="display: none">
                  <button type="submit"  class="btn btn-outline-success" >Add To Watchlist</button>
              </form>
-                      <form action="/buy" method="post" class="m-2">
+             <div class="row">
+                   <div class="col-6">
+<form action="/buy" method="post" class="m-2">
                  <input value="{{ stock['symbol'] }}" name="symbol" style="display: none">
-                 <button type="submit"  class="btn btn-outline-success" >Buy</button>
+                         <input value="1" name="amount" min="1" type="number" class="form-control amount text-center">
+<br>
+                     <button type="submit"  class="btn btn-outline-success mb-1" >Buy</button>
              </form>
-                               <form action="/sell" method="post">
+      </div>
+      <div class="col-6">
+                               <form action="/sell" method="post" class="m-2">
                  <input value="{{ stock['symbol'] }}" name="symbol" style="display: none">
-                 <button type="submit"  class="btn btn-outline-success" >Sell</button>
+                 <input value="1" name="amount" type="number" min="1" class="form-control amount text-center">
+                                   <br>
+
+                 <button type="submit"  class="btn btn-outline-success mb-1" >Sell</button>
              </form>
      </div>
-                <hr size="5" class="mb-1 mt-2 hr" noshade>
+         </div>
+     </div>
+     </div>
 
     {% endif %}
 {% endblock %}
