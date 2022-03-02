@@ -109,4 +109,5 @@ h5.card-header {
   color: var(--orange);
   background: #f0f2f8;
   border-radius: 5px !important;
+  margin-bottom: 0.5rem;
 }
