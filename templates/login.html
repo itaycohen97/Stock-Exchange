@@ -1,9 +1,10 @@
 {% extends "layout.html" %}
 
 {% block body %}
-        <h1 class="text-center text-responsive-huge mt-5">InveStock</h1>
+        <h1 class="text-center fs-1 mt-5">InveStock</h1>
             <h5 class="text-danger text-center m-auto">{{error}}</h5>
         <div class="m-5">
+        <div class="m-auto card p-4 col-md-6 shadow-lg logincard">
     <form action="/login" method="post">
         <div class="form-group mb-3">
             <label for="Username" class="form-label">User Name</label>
@@ -17,6 +18,7 @@
                     <button class="btn btn-primary pe-5 ps-5" type="submit">Log In</button>
         </div>
     </form>
+
             <div class="text-center mt-5">
                 <form action="/register">
                     <p class="mb-1">New?</p>
@@ -26,6 +28,8 @@
 
     <br>
         </div>
+                                </div>
+
 
 
 

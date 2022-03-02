@@ -1,70 +1,189 @@
-{% extends "layout.html" %}
+{% extends "layout.html" %} {% block profile %}
+<div id="Sidenav" class="d-flex flex-column flex-shrink-0 sidenav">
+  <div class="mb-auto">
+    <a href="javascript:void(0)" class="closebtn" onclick="toggleNav()"
+      >&times;</a
+    >
+    <a href="/">Home</a>
+    <a href="/watchlist">Watch List</a>
+    <a href="/history">History</a>
+{#    <a href="#">Settings</a>#}
+  </div>
 
-{% block profile %}
-    </div>
-    <div id="Sidenav" class="d-flex flex-column flex-shrink-0 sidenav">
-    <div class="mb-auto">
-          <a href="javascript:void(0)" class="closebtn" onclick="toggleNav()">&times;</a>
-          <a href="/">Home</a>
-          <a href="/watchlist">Watch List</a>
-          <a href="/history">History</a>
-          <a href="#">Settings</a>
-    </div>
-
-        <hr class="bg-dark">
-    <div class="dropdown" id="usermenutoggle">
-      <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle" >
-          {{session["full_name"]}}      </a>
-      <ul class="dropdown-menu dropdown-menu-dark text-small shadow" id="usermenu" style="display: none; left: 30px;bottom: 70px">
-        <li><a class="dropdown-item text-1" href="/logout">Sign out</a></li>
-      </ul>
-    </div>
+  <hr class="bg-dark w-75" />
+  <div class="dropdown" id="usermenutoggle">
+    <a
+      href="#"
+      class="d-flex align-items-center text-white text-decoration-none dropdown-toggle mb-3"
+    >
+      {{session["full_name"]}}
+    </a>
+    <ul
+      class="dropdown-menu dropdown-menu-dark text-small shadow"
+      id="usermenu"
+      style="display: none; left: 30px; bottom: 70px"
+    >
+      <li><a class="dropdown-item fs-4" href="/logout">Sign out</a></li>
+    </ul>
+  </div>
 </div>
 <!-- Use any element to open the sidenav -->
-    <div class="d-flex bd-highlight mb-2 sticky-top shadow-sm" style="background: inherit">
-<span class=" ms-4 mt-2 mb-2" style="font-size:30px;cursor:pointer;z-index: 2000" onclick="toggleNav()">&#9776; InveStock</span>
-        <div class="d-none d-md-inline p-2 bd-highlight">{{ session["budget"] }} flow<br>{{ session["stocksmoney"] }} invested</div>
-        <div class="p-2 bd-highlight d-inline-block ms-auto">
-    <form class="" action="/search" method="post">
-    <input type="text" class="search form-control mt-2" id="search" name="search" placeholder="Search">
-</form>
-
-</div>
-                    <hr size="5" class="mb-1 hr" noshade>
+<div class="shadow-lg header">
+  <div class="d-flex bd-highlight mb-2 sticky-top">
+    <span
+      class="ms-4 mt-2 mb-2"
+      style="font-size: 30px; cursor: pointer; z-index: 2000"
+      onclick="toggleNav()"
+      >&#9776;</span
+    >
+    <p class="ms-2 mt-4">
+      <muted class="fs-6">welcome back,<br /></muted> {{session["full_name"]}}
+    </p>
+    <div class="align-items-center text-center ms-auto mt-3 d-none d-md-block">
+      <ul
+        class="nav col-12 col-lg-auto my-2 justify-content-center my-md-0 text-small"
+      >
+        <li>
+          <p class="nav-link text-white pb-1 m-0">
+            <span class="material-icons-outlined fs-4"> savings </span>
+            <br />
+            Balance
+            <hr size="4" class="mb-0 m-2 mt-0 hr" noshade />
+            <p class="mt-0">{{ session["budget"] }}</p>
+          </p>
+        </li>
+        <li>
+          <p class="nav-link text-white pb-1 mb-0">
+            <span class="material-icons-outlined fs-4"> attach_money </span>
+            <br />
+            Protfolio
+            <hr size="4" class="mb-0 m-2 mt-0 hr" noshade />
+            <p class="mt-0">{{ session["stocksmoney"] }}</p>
+          </p>
+        </li>
+        <li>
+          <p class="nav-link text-white pb-1 mb-0">
+            <span class="material-icons-outlined fs-4"> trending_up </span>
+            <br />
+            Profit
+            <hr size="4" class="mb-0 m-2 mt-0 hr" noshade />
+            <p class="mt-0">{{ session['Profit'] }}</p>
+        </p>
+        </li>
+      </ul>
     </div>
+    <div class="p-2 bd-highlight d-inline-block ms-auto">
+      <form class="" action="/search" method="post">
+        <input
+          type="text"
+          class="search form-control mt-2"
+          id="search"
+          name="search"
+          placeholder="Search"
+        />
+      </form>
+    </div>
+    <br />
+  </div>
+  <div class="m-auto d-block justify-content-center text-center">
+    <div class="align-items-center text-center ms-auto mt-3 d-block d-md-none">
+      <ul
+        class="nav col-12 col-lg-auto my-2 justify-content-center my-md-0 text-small"
+      >
+        <li>
+          <p class="nav-link text-white mb-0">
+            <span class="material-icons-outlined fs-4"> savings </span>
+            <br />
+            Balance
+            <br />
+          </p>
+          <p class="mt-0">{{ session["budget"] }}</p>
+        </li>
+        <li>
+          <p class="nav-link text-white mb-0">
+            <span class="material-icons-outlined fs-4"> attach_money </span>
+            <br />
+            Protfolio
+            <br />
+          </p>
+          <p class="mt-0">{{ session["stocksmoney"] }}</p>
+        </li>
+        <li>
+          <p class="nav-link text-white mb-0">
+            <span class="material-icons-outlined fs-4"> trending_up </span>
+            <br />
+            Profit
+            <br />
+          </p>
+          <p class="mt-0">{{ session["Profit"] }}</p>
+        </li>
+      </ul>
+    </div>
+    <p class="d-inline-block text-danger m-0">{{error}}</p>
+  </div>
+</div>
+
 {% if stock %}
-     <div class="row justify-content-center">
-         <div class="col-6 d-block text-center search text-white shadow-lg">
-         <p class="text-2 m-0">{{ stock['symbol'] }}</p>
-         <p class="text-0 m-2">Name: {{ stock['name'] }}</p>
-         <p class="text-0 m-2">Price: ${{stock['price']}}</p>
-         <p class="text-0 m-2">Primary Exchange: {{ stock['primaryExchange']}}</p>
-         <p class="text-0 m-2">Change Percent: {{ stock['quote']['change'] }}</p>
-             <form action="/addwatchlist" method="post">
-                 <input value="{{ stock['symbol'] }}" name="symbol" style="display: none">
-                 <button type="submit"  class="btn btn-outline-success" >Add To Watchlist</button>
-             </form>
-             <div class="row">
-                   <div class="col-6">
-<form action="/buy" method="post" class="m-2">
-                 <input value="{{ stock['symbol'] }}" name="symbol" style="display: none">
-                         <input value="1" name="amount" min="1" type="number" class="form-control amount text-center">
-<br>
-                     <button type="submit"  class="btn btn-outline-success mb-1" >Buy</button>
-             </form>
+<div class="row justify-content-center">
+  <div class="col-6 d-block text-center search text-white shadow-lg">
+    <p class="fs-3 m-0">{{ stock['symbol'] }}</p>
+    <p class="fs-6 m-2">Name: {{ stock['name'] }}</p>
+    <p class="fs-6 m-2">Price: ${{stock['price']}}</p>
+    <p class="fs-6 m-2">Primary Exchange: {{ stock['primaryExchange']}}</p>
+    <p class="fs-6 m-2">Change Percent: {{ stock['quote']['change'] }}</p>
+    <form action="/addwatchlist" method="post">
+      <input
+        value="{{ stock['symbol'] }}"
+        name="symbol"
+        style="display: none"
+      />
+      <button type="submit" class="btn btn-outline-success">
+        Add To Watchlist
+      </button>
+    </form>
+    <div class="row">
+      <div class="col-6">
+        <form action="/buy" method="post" class="m-2">
+          <input
+            value="{{ stock['symbol'] }}"
+            name="symbol"
+            style="display: none"
+          />
+          <input
+            value="1"
+            name="amount"
+            min="1"
+            type="number"
+            class="form-control amount text-center"
+          />
+          <br />
+          <button type="submit" class="btn btn-outline-success mb-1">
+            Buy
+          </button>
+        </form>
       </div>
       <div class="col-6">
-                               <form action="/sell" method="post" class="m-2">
-                 <input value="{{ stock['symbol'] }}" name="symbol" style="display: none">
-                 <input value="1" name="amount" type="number" min="1" class="form-control amount text-center">
-                                   <br>
+        <form action="/sell" method="post" class="m-2">
+          <input
+            value="{{ stock['symbol'] }}"
+            name="symbol"
+            style="display: none"
+          />
+          <input
+            value="1"
+            name="amount"
+            type="number"
+            min="1"
+            class="form-control amount text-center"
+          />
+          <br />
 
-                 <button type="submit"  class="btn btn-outline-success mb-1" >Sell</button>
-             </form>
-     </div>
-         </div>
-     </div>
-     </div>
-
-    {% endif %}
-{% endblock %}
+          <button type="submit" class="btn btn-outline-success mb-1">
+            Sell
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %} {% endblock %}

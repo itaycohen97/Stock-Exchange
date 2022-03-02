@@ -1,6 +1,8 @@
 from flask import Flask
 
 import os
+
+from sqlalchemy import case, true
 from dbmethods import *
 from cs50 import SQL
 from flask import Flask, flash, jsonify, redirect, render_template, request, session
@@ -9,10 +11,12 @@ from tempfile import mkdtemp
 from werkzeug.exceptions import default_exceptions, HTTPException, InternalServerError
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from helpers import apology, login_required, lookup, usd
+from helpers import apology, login_required, lookup, usd, Precent
 
 # Configure application
 app = Flask(__name__)
+
+
 
 # Ensure templates are auto-reloaded
 app.config["TEMPLATES_AUTO_RELOAD"] = True
@@ -45,10 +49,12 @@ db = SQL("sqlite:///finance.db")
 def home():
     return render_template('home.html', session=session)
 
+
+
 @app.route('/watchlist')
 @login_required
 def watchlist():
-    session["watch_list"] = getstocks(session['user_id'], db)
+    session["watch_list"] = GetStocks(session['user_id'], db)
     return render_template('watch_list.html', session=session)
 
 
@@ -115,27 +121,19 @@ def buy():
     if request.method == 'GET':
         return redirect('/')
     else:
-        quote = lookup(request.form.get("symbol"))
-        budget = float(db.execute('select cash from users where id = :id', id=session["user_id"])[0]['cash'])
+        stock = lookup(request.form.get("symbol"))
         amount = float(request.form.get("amount"))
-        if quote != None:
-            if (quote["price"]) * amount < budget:
-                db.execute(
-                    'insert into store (userid, symbol, price, shares) values (:userid, :symbol, :price, :shares)',
-                    userid=session["user_id"], symbol=quote['symbol'], price=float(quote['price']), shares=amount)
-                db.execute('update users set cash = :cash where id = :id',
-                           cash=budget - (float(quote['price']) * amount), id=session["user_id"])
-                session["budget"] = usd(float(
-                    db.execute('select cash from users where id = :id', id=session["user_id"])[0]['cash']))
-                session["stocks"] = currentstocks(session['user_id'], db)
-                session["stocksmoney"] = stocksmoney(session["stocks"])
-                session["budget"] = usd(
-                    float(db.execute('select cash from users where id = :id', id=session["user_id"])[0]['cash']))
-                return redirect("/")
-            else:
-                return render_template("home.html", error="You Don't Have Enough Money", session=session)
+        try_buy = BuyStocks(session['user_id'], stock, amount, db)
+        if try_buy[0] is True:
+            flash('Sold ' + str(amount) + ' ' + str(stock['symbol']) + ' stock.')
+            session["stocks"] = GetUserProtfolio(session['user_id'], db)
+            session["stocksmoney"] = MoneyInvested(session["stocks"])
+            session["budget"] = usd(
+                float(db.execute('select cash from users where id = :id', id=session["user_id"])[0]['cash']))
+            return redirect("/")
         else:
-            return render_template("buy.html", error="Wrong Symbol")
+            print(try_buy[1])
+            return render_template('home.html', error=try_buy[1], session=session)
 
 
 @app.route("/sell", methods=["GET", "POST"])
@@ -143,34 +141,17 @@ def buy():
 def sell():
     if request.method == 'POST':
         symbol = request.form.get("symbol")
-        # check if there is enough bought
-        if symbol != None:
-            currentprice = float(lookup(request.form.get("symbol"))['price'])
-            currentcash = int(db.execute('select cash from users where id = :id', id=session["user_id"])[0]['cash'])
-            sellamount = int(request.form.get("amount"))
-            usershares = int(db.execute('SElECT SUM(shares) FROM store WHERE userid = :id AND symbol = :symbol',
-                                        id=session["user_id"], symbol=symbol)[0]['SUM(shares)'])
-
-            if usershares >= sellamount:
-                db.execute('update users set cash = :cash where id = :id',
-                           cash=(currentcash + (sellamount * currentprice)), id=session["user_id"])
-                db.execute(
-                    'insert into store (userid, symbol, price, shares) values (:userid, :symbol, :price, :shares)',
-                    userid=session["user_id"], symbol=symbol, price=currentprice, shares=0 - sellamount)
-                flash('Sold ' + str(sellamount) + ' ' + str(symbol) + ' stock.')
-                session["stocks"] = currentstocks(session['user_id'], db)
-                session["stocksmoney"] = stocksmoney(session["stocks"])
-                session["budget"] = usd(
-                    float(db.execute('select cash from users where id = :id', id=session["user_id"])[0]['cash']))
-                return redirect("/")
-
-            else:
-                return render_template('sell.html', error="Invalid, You don't have as much stocks")
+        amount = int(request.form.get("amount"))
+        try_sell = SellStocks(session["user_id"], symbol, amount, db)
+        if try_sell[0] is True:
+            flash('Sold ' + str(amount) + ' ' + str(symbol) + ' stock.')
+            session["stocks"] = GetUserProtfolio(session['user_id'], db)
+            session["stocksmoney"] = MoneyInvested(session["stocks"])
+            session["budget"] = usd(
+                float(db.execute('select cash from users where id = :id', id=session["user_id"])[0]['cash']))
+            return redirect("/")
         else:
-            return render_template('sell.html', error="Invalid stock symbol")
-
-
-
+            return render_template('home.html', error=try_sell[1],session=session)
     else:
         return redirect('/')
 
@@ -213,9 +194,13 @@ def login():
         session["user_id"] = user[0]["id"]
         session["user_name"] = user[0]["username"]
         session["full_name"] = user[0]["fullname"]
-        session["stocks"] = currentstocks(session['user_id'], db)
-        session["stocksmoney"] = stocksmoney(session["stocks"])
-        session["budget"] = usd(float(db.execute('select cash from users where id = :id', id=session["user_id"])[0]['cash']))
+        session["stocks"] = GetUserProtfolio(session['user_id'], db)
+        stockmoney = MoneyInvested(session["stocks"])
+        session["stocksmoney"] = usd(stockmoney)
+        budget = float(db.execute('select cash from users where id = :id', id=session["user_id"])[0]['cash'])
+        session["budget"] = usd(budget)
+        profit = (((budget+stockmoney)/10000)-1)*100
+        session['Profit'] = Precent(profit)
 
         # Redirect user to home page
         return redirect("/")

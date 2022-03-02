@@ -1,58 +1,78 @@
-{% extends "profile.html" %}
-
-{% block body %}
-        <div class="m-auto justify-content-center text-center">
-            <p class="d-inline-block d-md-none text-decoration-underline m-0">{{ session["budget"] }} cash, {{ session["stocksmoney"] }} invested</p>
-            <p class="d-inline-block text-danger m-0">{{error}}</p>
-        <hr size="5" class="mb-2 mt-1 hr d-block d-md-none" noshade>
-    </div>
-
-    </div>
-        <div class="row justify-content-center">
-    {% for stock in session['stocks'] %}
-         <div class="col-5 col-md-3 colored-block-sm">
-  <dl class="row">
-      <dt class="col-12 text-2">{{ stock['symbol'] }}</dt>
-  </dl>
-
-  <dl class="row">
-    <dt class="col-3" style="text-align: left">Name</dt>
-    <dd class="col-9" style="text-align: right">{{ stock['name'] }}</dd>
-              <hr class="m-auto mt-2 mb-2" style="width: 80%">
-
-    <dt class="col-3" style="text-align: left">Price</dt>
-    <dd class="col-9" style="text-align: right">${{stock['price']}}</dd>
-              <hr class="m-auto mt-2 mb-2" style="width: 80%">
-
-    <dt class="col-3" style="text-align: left">Market</dt>
-    <dd class="col-9" style="text-align: right">{{ stock['primaryExchange']}}</dd>
-              <hr class="m-auto mt-2 mb-2" style="width: 80%">
-
-      <dt class="col-3" style="text-align: left">Amount</dt>
-    <dd class="col-9" style="text-align: right">{{ stock['stock_count'] }}</dd>
-              <hr class="m-auto mt-2 mb-2" style="width: 80%">
-      <div class="col-6">
-<form action="/buy" method="post" class="m-2">
-                 <input value="{{ stock['symbol'] }}" name="symbol" style="display: none">
-                         <input value="1" name="amount" min="1" type="number" class="form-control amount text-center">
-<br>
-                     <button type="submit"  class="btn btn-outline-success mb-1" >Buy</button>
-             </form>
+{% extends "profile.html" %} {% block body %}
+<div class="row row-cols-1 row-cols-md-3 g-4 m-auto">
+  {% for stock in session['stocks'] %}
+  <div class="col">
+    <div class="card border-0 shadow-lg">
+      <div class="card-body">
+        <h5 class="card-header text-center shadow-sm">
+          {{ stock['symbol'] }}, {{ stock['name'] }}
+        </h5>
+        <div class="row">
+          <p class="col-3 fw-normal" style="text-align: left">Price</p>
+          <p class="col-9 fw-light" style="text-align: right">
+            ${{stock['price']}}
+          </p>
+        </div>
+        <div class="row">
+          <p class="col-4 fw-normal" style="text-align: left">Market</p>
+          <p class="col-8 fw-light" style="text-align: right">
+            {{ stock['primaryExchange']}}
+          </p>
+        </div>
+        <div class="row">
+          <p class="col-4 fw-normal" style="text-align: left">Amount</p>
+          <p class="col-8 fw-light" style="text-align: right">
+            {{ stock['stock_count'] }}
+          </p>
+        </div>
       </div>
-      <div class="col-6">
-                               <form action="/sell" method="post" class="m-2">
-                 <input value="{{ stock['symbol'] }}" name="symbol" style="display: none">
-                 <input value="1" name="amount" type="number" min="1" class="form-control amount text-center">
-                                   <br>
+      <ul
+        class="nav col-12 col-lg-auto my-2 justify-content-center my-md-0 text-small"
+      >
+        <li>
+          <form action="/buy" method="post" class="m-0 text-center">
+            <input
+              value="{{ stock['symbol'] }}"
+              name="symbol"
+              style="display: none"
+            />
+            <input
+              value="1"
+              name="amount"
+              min="1"
+              type="number"
+              class="form-control amount text-center"
+            />
+            <button type="submit" class="btn btn-outline-success mb-1">
+              Buy
+            </button>
+          </form>
+        </li>
+        <li>
+          <form action="/sell" method="post" class="m-0 text-center">
+            <input
+              value="{{ stock['symbol'] }}"
+              name="symbol"
+              style="display: none"
+            />
+            <input
+              value="1"
+              name="amount"
+              type="number"
+              min="1"
+              class="form-control amount text-center"
+            />
 
-                 <button type="submit"  class="btn btn-outline-success mb-1" >Sell</button>
-             </form>
-     </div>
-
-  </dl>
-</div>
-   {% endfor %}
+            <button type="submit" class="btn btn-outline-success mb-1">
+              Sell
+            </button>
+          </form>
+        </li>
+      </ul>
     </div>
+  </div>
 
+  {% endfor %}
+</div>
 
-</div>{% endblock %}
+{% endblock %}

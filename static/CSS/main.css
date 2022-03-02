@@ -1,127 +1,112 @@
-@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@200;400&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Oswald:wght@200;400&display=swap");
+
+:root {
+  --body: #f0f6f9;
+  --text: #250e04;
+  --secondary: #d8c4ad;
+  --black: #1c1c1c;
+  --white: #eaeeff;
+  --dark-orange: #250e04;
+  --orange: #ef946c;
+  --green: #214f4b;
+}
 
 body {
-    background-color: #d8c4ad;
-    font-family: 'Oswald', sans-serif;
-    color: #05377f
+  background-color: var(--body);
+  font-family: "Oswald", sans-serif;
+  color: var(--text);
 }
 
-div a{
-    display: inline-block;
+h1 {
+  color: var(--orange);
+}
+
+div a {
+  display: inline-block;
   position: relative;
 }
-
-.text-0{
-    font-size: .9rem;
+.colored-block {
+  /*background: #2a2a2a;*/
+  text-align: center;
+  /*color: #e5e5e5;*/
+  border-radius: 12px;
 }
-.text-1 {
-    font-size: 1.1rem !important;
-}
-.text-2 {
-   font-size: 1.6rem;
-}
-.text-3 {
-    font-size: 1.9rem;
-}
-.text-4 {
-    font-size: 2.3rem;
-}
-.text-5 {
-    font-size: 3.5rem;
-}
-
-.text-responsive-huge {
-    font-size: calc(2.5rem + 2vw);
-}
-.colored-block{
-    /*background: #2a2a2a;*/
-    text-align: center;
-    /*color: #e5e5e5;*/
-    border-radius: 12px;
-}
- .table-dark{
-     --bs-table-bg: transparent;
-    --bs-table-striped-bg: transparent;
-     --bs-table-striped-color: #fff;
-    --bs-table-active-bg: #373b3e;
-    --bs-table-active-color: #fff;
-    --bs-table-hover-bg: #323539;
-    --bs-table-hover-color: #fff;
-    color: #fff;
-    border-color: #373b3e;
- }
 
 .transparent-block {
-    background: transparent;
-    margin: 8vw;
-    text-align: center;
-    padding: 4vw;
-    padding-bottom: 6vw !important;
-    /*color: white;*/
-    border-radius: 12px;
+  background: transparent;
+  margin: 8vw;
+  text-align: center;
+  padding: 4vw;
+  padding-bottom: 6vw !important;
+  /*color: white;*/
+  border-radius: 12px;
 }
 
-.colored-block-sm{
-/*background-color: #05377f;*/
-/*    background-image: linear-gradient(*/
-/*9deg, #05377f 0%, #1b4f99 74%);*/
-margin: 1vw;
-    text-align: center;
-    padding: 0.5rem;
-    color: inherit;
-    border-radius: 17px;
-    display: inline-block !important;
-    border: 2px solid;
+.colored-block-sm {
+  margin: 1vw;
+  text-align: center;
+  padding: 0.5rem;
+  color: var(--body);
+  background: var(--green);
+  border-radius: 17px;
+  display: inline-block !important;
+  border: 2px solid;
 }
 
-.hr{
-    color: inherit;
-    border: 0;
-    border-radius: 12px;
-    opacity: 0.85;
-}
-.search {
-    background: #05377f;
-    border: 1px;
-    border-radius: 22px;
+.hr {
+  color: inherit;
+  border: 0;
+  border-radius: 12px;
+  opacity: 0.85;
 }
 
-.search::placeholder {
-    color: #fff9f0;
+.amount,
+.amount:focus {
+  background: none;
+  border: none;
+  color: var(--orange);
+  box-shadow: none;
+  outline: none;
 }
-input#search {
-    color: #fff9f0;
-}
-
-.search:focus {
-    color: #fff9f0;
-    background: #05377f;
-
-}
-
-.amount,.amount:focus {
-    background: none;
-    border: none;
-    color: white;
-    box-shadow: none;
-outline: none;
-
-}
-
 
 .btn {
-    color: #ffffff !important;
-    text-decoration: none !important;
-    background-color: transparent;
-    border-radius: 3px;
-    border: #ffffff 1px solid;
+  color: var(--orange);
+  text-decoration: none !important;
+  background-color: transparent;
+  border-radius: 3px;
+  border: var(--orange) 1px solid;
 }
 
-.btn:hover{
-    color: #ffffff !important;
-    background-color: #0b5ed7;
-    border-radius: 3px;
-    border: #0b5ed7 1px solid;
-    transition: all 200ms;
+.btn:hover {
+  color: var(--orange);
+  background-color: var(--body);
+  border-radius: 3px;
+  border: var(--orange) 1px solid;
+  transition: all 200ms;
+}
 
+.logincard {
+  background: var(--orange);
+  color: var(--white);
+}
+
+.logincard .btn:hover {
+  color: var(--orange);
+  background-color: var(--body);
+  border-radius: 3px;
+  border: var(--orange) 1px solid;
+  transition: all 200ms;
+}
+.logincard .btn {
+  color: var(--body);
+  background-color: var(--orange);
+  border-radius: 3px;
+  border: var(--body) 1px solid;
+  transition: all 200ms;
+}
+
+h5.card-header {
+  color: var(--orange);
+  background: #f0f2f8;
+  border-radius: 5px !important;
 }

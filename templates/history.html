@@ -3,30 +3,7 @@
 {% block body %}
     <div class="container-md">
 </div>
-    <div class="row justify-content-center mt-4 " >
-    {% for item in history %}
-        <div class="col-12 col-md-4 colored-block-sm">
-  <dl class="row">
-      <dt class="col-12">kdjkjsd</dt>
-  </dl>
-  <dl class="row">
-    <dt class="col-3" style="text-align: left">Symbol</dt>
-    <dd class="col-9" style="text-align: right">{{ item['symbol'] }}</dd>
-    <dt class="col-3" style="text-align: left">Shares</dt>
-    <dd class="col-9" style="text-align: right">{{ item['shares'] }}</dd>
-    <dt class="col-3" style="text-align: left">Price</dt>
-    <dd class="col-9" style="text-align: right">{{ item['price'] }}</dd>
-      <dt class="col-3" style="text-align: left">Date</dt>
-    <dd class="col-9" style="text-align: right">{{ item['Date'] }}</dd>
-
-  </dl>
-</div>
-
-    {% endfor %}
-
-
-</div>
-<table class="table table-dark">
+<table class="table container text-white">
     <tr>
         <th>Symbol</th>
         <th>Shares</th>

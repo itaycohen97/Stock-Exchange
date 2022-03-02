@@ -1,3 +1,8 @@
+:root {
+    --orange: #ef946c;
+    --white: #FEFDEB
+}
+
 /* The side navigation menu */
 .sidenav a:after {
   content: '';
@@ -22,7 +27,7 @@
   z-index: 1; /* Stay on top */
   top: 0; /* Stay at the top */
   left: 0;
-  background-color: #05377f;
+  background-color: var(--orange);
   overflow-x: hidden; /* Disable horizontal scroll */
   padding-top: 60px; /* Place content 60px from the top */
   transition: 0.5s; /* 0.5 second transition effect to slide in the sidenav */
@@ -60,20 +65,11 @@
 }
 
 /* Position and style the close button (top right corner) */
-.sidenav .closebtn {
+.sidenav {
   position: absolute;
   top: 0;
   right: 25px;
   font-size: 36px;
-  margin-left: 50px;
-}
-.facepic {
-    border-radius: 50%!important;
-    max-height: 60px;
-    width: auto;
-    display: inline-block;
-    padding: 0;
-    margin: 0;
 }
 
 hr{
@@ -83,11 +79,37 @@ hr{
     border: 0;
     opacity: .25;
 }
+.search {
+    background: var(--orange);
+    border: 1px solid;
+    border-radius: 22px;
+
+}
+
+.search::placeholder {
+    color: #fff9f0;
+}
+input#search {
+    color: #fff9f0;
+}
+
+.search:focus {
+    color: var(--orange) !important;
+    background: var(--white);
+
+}
+
+.header {
+  background: var(--orange);
+  color: var(--white);
+}
+
 /* Style page content - use this if you want to push the page content to the right when you open the side navigation */
 #main {
   transition: margin-left .5s;
   padding: 20px;
 }
+
 
 /* On smaller screens, where height is less than 450px, change the style of the sidenav (less padding and a smaller font size) */
 @media screen and (max-height: 450px) {
