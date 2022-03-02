@@ -1,23 +1,19 @@
-{% extends "profile.html" %}
-
-{% block body %}
-    <div class="container-md">
-</div>
-<table class="table container text-white">
-    <tr>
-        <th>Symbol</th>
-        <th>Shares</th>
-        <th>Price</th>
-        <th>Date</th>
-    </tr>
-{% for item in history %}
-    <tr>
-        <td>{{item['symbol']}}</td>
-        <td>{{item['shares']}}</td>
-        <td>${{item['price']}}</td>
-        <td>{{item['Date']}}</td>
-
-    </tr>
-        {% endfor %}
+{% extends "profile.html" %} {% block body %}
+<div class="container-md"></div>
+<table class="table container">
+  <tr>
+    <th>Symbol</th>
+    <th>Shares</th>
+    <th>Price</th>
+    <th>Date</th>
+  </tr>
+  {% for item in history %}
+  <tr>
+    <td>{{item['symbol']}}</td>
+    <td>{{item['shares']}}</td>
+    <td>${{item['price']}}</td>
+    <td>{{item['Date']}}</td>
+  </tr>
+  {% endfor %}
 </table>
 {% endblock %}

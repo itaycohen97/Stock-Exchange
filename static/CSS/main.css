@@ -25,33 +25,6 @@ div a {
   display: inline-block;
   position: relative;
 }
-.colored-block {
-  /*background: #2a2a2a;*/
-  text-align: center;
-  /*color: #e5e5e5;*/
-  border-radius: 12px;
-}
-
-.transparent-block {
-  background: transparent;
-  margin: 8vw;
-  text-align: center;
-  padding: 4vw;
-  padding-bottom: 6vw !important;
-  /*color: white;*/
-  border-radius: 12px;
-}
-
-.colored-block-sm {
-  margin: 1vw;
-  text-align: center;
-  padding: 0.5rem;
-  color: var(--body);
-  background: var(--green);
-  border-radius: 17px;
-  display: inline-block !important;
-  border: 2px solid;
-}
 
 .hr {
   color: inherit;
