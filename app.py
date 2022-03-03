@@ -32,7 +32,7 @@ def after_request(response):
 app.jinja_env.filters["usd"] = usd
 
 # Configure session to use filesystem (instead of signed cookies)
-# app.config["SESSION_FILE_DIR"] = gettempdir()
+app.config["SESSION_FILE_DIR"] = mkdtemp()
 app.config["SESSION_PERMANENT"] = datetime.timedelta(hours=2)
 app.config["SESSION_TYPE"] = "filesystem"
 Session(app)
@@ -62,7 +62,6 @@ def home():
 @app.route('/watchlist')
 @login_required
 def watchlist():
-    print(session['user_id'])
     session["watch_list"] = GetStocks(session['user_id'], db)
     return render_template('watch_list.html', session=session)
 
@@ -146,7 +145,6 @@ def buy():
             session["budget"] = usd(float(cash[0]['cash']))
             return redirect("/")
         else:
-            print(try_buy[1])
             return render_template('home.html', error=try_buy[1], session=session)
 
 
@@ -177,7 +175,6 @@ def history():
     # """Show history of transactions"""
     db.execute('select * from Store where userid = %s', (session["user_id"],))
     data = DbSelect(db)
-    print(data)
     return render_template("history.html", history=data, session=session)
 
 
@@ -203,7 +200,6 @@ def login():
         db.execute("SELECT * FROM Users WHERE username = %s",
                           (request.form.get("username"),))
         user = DbSelect(db)
-        print(user)
         # Ensure username exists and password is correct
         if len(user) != 1 or not check_password_hash(user[0]["hash"], request.form.get("password")):
             return render_template("login.html", error='Invalid Username or Password')
@@ -249,9 +245,7 @@ def add():
     if check == None or len(check) != 0:
         redirect('/')
     else:
-        print
         db.execute('insert into Watch (userid, symbol) values (%s, %s)',(session['user_id'], symbol))
-        print(db)
         dbcon.commit()
     return redirect('/watchlist')
 
