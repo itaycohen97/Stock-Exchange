@@ -1,8 +1,6 @@
 from flask import Flask
 
-import os
 import mysql.connector
-from mysql.connector.cursor import MySQLCursorPrepared
 from dbmethods import *
 from flask import Flask, flash, redirect, render_template, request, session
 from flask_session import Session

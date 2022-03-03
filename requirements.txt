@@ -1,6 +1,9 @@
-cs50==8.0.1
 Flask==2.0.2
 Flask_Session==0.4.0
 mysql_connector_repackaged==0.3.1
 requests==2.26.0
 Werkzeug==2.0.2
+mysql-connector==2.2.9
+mysql-connector-python==8.0.27
+wheel==0.37.0
+yarg==0.1.9
