@@ -4,8 +4,9 @@ from helpers import lookup, usd
 
 
 def GetStocks(user_id, db):
-    symbols = db.execute("SELECT symbol FROM watch WHERE userid = :userid",
-                         userid=user_id)
+    db.execute("SELECT symbol FROM Watch WHERE userid = %s",(user_id,))
+    symbols = DbSelect(db)    
+    print(symbols)                 
     stocks = []
     for symbol in symbols:
         stock = lookup(symbol['symbol'])
@@ -16,7 +17,8 @@ def GetStocks(user_id, db):
 
 def GetUserProtfolio(user_id, db):
     stocks = []
-    symbols = db.execute('select symbol, amount from shares where userid = :id', id=user_id)
+    db.execute('select symbol, amount from Shares where userid = %s', (user_id,))
+    symbols = DbSelect(db)
     for symbol in symbols:
         stock = lookup(symbol['symbol'])
         stock["symbol"] = symbol['symbol']
@@ -42,21 +44,25 @@ def SellStocks(user_id, symbol, amount, db):
         return False, "Invalid stock symbol"
 
     currentprice = float(lookup(symbol)['price'])
-    currentcash = int(db.execute('select cash from users where id = :id', id=user_id)[0]['cash'])
-    try:
-        usershares = int(db.execute('SElECT amount FROM shares WHERE userid = :id AND symbol = :symbol',
-                                    id=user_id, symbol=symbol)[0]['amount'])
-    except:
+    db.execute('select cash from Users where id = %s', (user_id,))
+    cash = DbSelect(db)
+    currentcash = int(cash[0]['cash'])
+    db.execute('SElECT amount FROM Shares WHERE userid = %s AND symbol = %s',
+                                (user_id, symbol))
+    cash = DbSelect(db)
+    if len(cash) == 0:
         usershares = 0
-    if usershares >= amount:
-        db.execute('update users set cash = :cash where id = :id',
-                   cash=(currentcash + (amount * currentprice)), id=user_id)
-        db.execute(
-            'insert into store (userid, symbol, price, shares) values (:userid, :symbol, :price, :shares)',
-            userid=user_id, symbol=symbol, price=currentprice, shares=0 - amount)
-        db.execute('update shares set amount = :amount where userid = :id and symbol= :symbol',
-                   amount=usershares - amount, id=user_id, symbol=symbol)
+    else:
+        usershares = int(cash[0]['amount'])
 
+    if usershares >= amount:
+        db.execute('update Users set cash = %s where id = %s',
+                   (currentcash + (amount * currentprice), user_id))
+        db.execute(
+            'insert into Store (userid, symbol, price, shares) values (%s, %s, %s, %s)',
+            (user_id, symbol, currentprice, 0 - amount))
+        db.execute('update Shares set amount = %s where userid = %s and symbol= %s',
+                   ((usershares - amount), user_id, symbol))
         return True, True
 
     else:
@@ -64,28 +70,42 @@ def SellStocks(user_id, symbol, amount, db):
 
 
 def BuyStocks(user_id, stock, amount, db):
-    budget = float(db.execute('select cash from users where id = :id', id=user_id)[0]['cash'])
+    db.execute('select cash from Users where id = %s', (user_id,))
+    query = DbSelect(db)
+    budget = float(query[0]['cash'])
+
     if stock is None:
         return False, "Invalid stock symbol"
     else:
         if (stock["price"]) * amount < budget:
             db.execute(
-                'insert into store (userid, symbol, price, shares) values (:userid, :symbol, :price, :shares)',
-                userid=user_id, symbol=stock['symbol'], price=float(stock['price']), shares=amount)
+                'insert into Store (userid, symbol, price, shares) values (%s, %s, %s, %s)',
+                (user_id, stock['symbol'], float(stock['price']), amount))
 
-            db.execute('update users set cash = :cash where id = :id',
-                       cash=budget - (float(stock['price']) * amount), id=user_id)
-            try:
-                usershares = int(
-                    db.execute('SElECT amount FROM shares WHERE userid = :id AND symbol = :symbol', id=user_id,
-                               symbol=stock['symbol'])[0]['amount'])
-                db.execute('update shares set amount = :amount where userid = :id and symbol= :symbol',
-                           amount=usershares + amount, id=user_id, symbol=stock['symbol'])
-            except:
-                usershares = 0
-                db.execute('insert into shares(userid, amount, symbol) values (:userid, :amount, :symbol)',
-                           amount=usershares + amount, userid=user_id, symbol=stock['symbol'])
-
+            db.execute('update Users set cash = %s where id = %s',
+                       (budget - (float(stock['price']) * amount), user_id))
+            db.execute('SElECT amount FROM Shares WHERE userid = %s AND symbol = %s', (user_id,stock['symbol']))
+            query = DbSelect(db)
+            if len(query) == 0:
+                 db.execute('insert into Shares (userid, symbol, amount) values (%s, %s, %s)',
+                        (user_id, stock['symbol'], amount))
+            else:
+                usershares = int(query[0]['amount'])
+                usershares = amount+usershares
+                db.execute('update Shares set amount = %s where userid = %s and symbol= %s',
+                            (usershares , user_id, stock['symbol']))
             return True, True
         else:
             return False, "You Don't Have Enough Money"
+
+
+
+def DbSelect(cursor):
+    list = []
+    for row in cursor:
+        result = dict(zip(cursor.column_names,row))
+        for key in result:
+            if issubclass(type(result[key]), bytearray):
+                result[key] = str(result[key], "utf-8")
+        list.append(result)
+    return list

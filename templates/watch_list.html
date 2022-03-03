@@ -8,6 +8,19 @@
       <div class="card-body">
         <h5 class="card-header text-center shadow-sm">
           {{ stock['symbol'] }}, {{ stock['name'] }}
+          <form
+            action="/removefromwatch"
+            method="post"
+            class="m-0 text-center d-inline p-0"
+          >
+            <input
+              value="{{ stock['symbol'] }}"
+              name="symbol"
+              style="display: none"
+            />
+
+            <button type="submit" class="btn p-1 mb-1">&times;</button>
+          </form>
         </h5>
         <div class="row">
           <p class="col-3 fw-normal" style="text-align: left">Price</p>

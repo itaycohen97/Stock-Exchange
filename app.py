@@ -1,11 +1,10 @@
 from flask import Flask
 
 import os
-
-from sqlalchemy import case, true
+import mysql.connector
+from mysql.connector.cursor import MySQLCursorPrepared
 from dbmethods import *
-from cs50 import SQL
-from flask import Flask, flash, jsonify, redirect, render_template, request, session
+from flask import Flask, flash, redirect, render_template, request, session
 from flask_session import Session
 from tempfile import mkdtemp
 from werkzeug.exceptions import default_exceptions, HTTPException, InternalServerError
@@ -40,7 +39,18 @@ app.config["SESSION_TYPE"] = "filesystem"
 Session(app)
 
 # Configure CS50 Library to use SQLite database
-db = SQL("sqlite:///finance.db")
+server = "sql6.freemysqlhosting.net"
+username = "sql6476401"
+password = "gpGZg7Gw2b"
+dbname = "sql6476401"
+dbcon = mysql.connector.connect(host=server, user=username, password=password, db=dbname)
+if (not dbcon):
+    print("error")
+    exit
+# cursor_class=MySQLCursorPrepared
+db = dbcon.cursor(buffered=True)
+dbcon.autocommit = True
+
 
 
 @app.route('/')
@@ -53,6 +63,7 @@ def home():
 @app.route('/watchlist')
 @login_required
 def watchlist():
+    print(session['user_id'])
     session["watch_list"] = GetStocks(session['user_id'], db)
     return render_template('watch_list.html', session=session)
 
@@ -94,23 +105,26 @@ def register():
             return render_template("register.html", error="Passwords don't Match")
 
         else:
-            rows = db.execute("SELECT * FROM users WHERE username = :username",
-                              username=request.form.get("username"))
+            db.execute("SELECT * FROM Users WHERE username = %s",
+                              (request.form.get("username"),))
+            rows = DbSelect(db)
             if len(rows) != 0:
                 return render_template("register.html", error="Username already exist")
             else:
                 new_username = request.form.get("username")
                 hash = generate_password_hash(request.form.get("password"))
                 fullname = request.form.get("fullname")
-                db.execute('insert into users (username, hash, fullname) values (:username, :hash, :fullname)',
-                           username=new_username, hash=hash, fullname=fullname)
-                user = db.execute('select * from users where username =:username', username=new_username)
+                db.execute('insert into Users (username, hash, fullname) values (%s, %s, %s)',
+                           (new_username, hash, fullname))
+                dbcon.commit()
+                db.execute('select * from Users where username =%s', (new_username,))
+                user = DbSelect(db)
                 session["user_id"] = user[0]['id']
                 session["full_name"] = user[0]['fullname']
                 session["user_name"] = user[0]['username']
-                session["budget"] = usd(float(
-                    db.execute('select cash from users where id = :id', id=session["user_id"])[0]['cash']))
-
+                db.execute('select cash from Users where id = %s', (session["user_id"],))
+                rows = DbSelect(db)
+                session["budget"] = usd(float(rows[0]['cash']))
                 return redirect("/")
 
 
@@ -125,10 +139,12 @@ def buy():
         try_buy = BuyStocks(session['user_id'], stock, amount, db)
         if try_buy[0] is True:
             flash('Sold ' + str(amount) + ' ' + str(stock['symbol']) + ' stock.')
+            dbcon.commit()
             session["stocks"] = GetUserProtfolio(session['user_id'], db)
             session["stocksmoney"] = MoneyInvested(session["stocks"])
-            session["budget"] = usd(
-                float(db.execute('select cash from users where id = :id', id=session["user_id"])[0]['cash']))
+            db.execute('select cash from Users where id = %s', (session["user_id"],))
+            cash = DbSelect(db)
+            session["budget"] = usd(float(cash[0]['cash']))
             return redirect("/")
         else:
             print(try_buy[1])
@@ -145,9 +161,11 @@ def sell():
         if try_sell[0] is True:
             flash('Sold ' + str(amount) + ' ' + str(symbol) + ' stock.')
             session["stocks"] = GetUserProtfolio(session['user_id'], db)
+            dbcon.commit()
             session["stocksmoney"] = MoneyInvested(session["stocks"])
-            session["budget"] = usd(
-                float(db.execute('select cash from users where id = :id', id=session["user_id"])[0]['cash']))
+            db.execute('select cash from Users where id = %s', (session["user_id"],))
+            budget = DbSelect(db)
+            session["budget"] = usd(float(budget[0]['cash']))
             return redirect("/")
         else:
             return render_template('home.html', error=try_sell[1],session=session)
@@ -158,7 +176,8 @@ def sell():
 @login_required
 def history():
     # """Show history of transactions"""
-    data = db.execute('select * from store where userid = :id', id=session["user_id"])
+    db.execute('select * from Store where userid = %s', (session["user_id"],))
+    data = DbSelect(db)
     print(data)
     return render_template("history.html", history=data, session=session)
 
@@ -182,9 +201,10 @@ def login():
 
         # Query database for username
 
-        user = db.execute("SELECT * FROM users WHERE username = :username",
-                          username=request.form.get("username"))
-
+        db.execute("SELECT * FROM Users WHERE username = %s",
+                          (request.form.get("username"),))
+        user = DbSelect(db)
+        print(user)
         # Ensure username exists and password is correct
         if len(user) != 1 or not check_password_hash(user[0]["hash"], request.form.get("password")):
             return render_template("login.html", error='Invalid Username or Password')
@@ -196,7 +216,8 @@ def login():
         session["stocks"] = GetUserProtfolio(session['user_id'], db)
         stockmoney = MoneyInvested(session["stocks"])
         session["stocksmoney"] = usd(stockmoney)
-        budget = float(db.execute('select cash from users where id = :id', id=session["user_id"])[0]['cash'])
+        db.execute('select cash from Users where id = %s', (session["user_id"],))
+        budget = float(DbSelect(db)[0]['cash'])
         session["budget"] = usd(budget)
         profit = (((budget+stockmoney)/10000)-1)*100
         session['Profit'] = Precent(profit)
@@ -221,18 +242,30 @@ def logout():
 
 
 @app.route('/addwatchlist', methods=['GET', 'POST'])
+@login_required
 def add():
     symbol = request.form.get('symbol')
-    check = db.execute('select * from watch where userid = :userid and symbol = :symbol', userid=session['user_id'],
-                       symbol=symbol)
-    if len(check) != 0:
+    db.execute('select * from Watch where userid = %s and symbol = %s', (session['user_id'], symbol))
+    check = DbSelect(db)
+    if check == None or len(check) != 0:
         redirect('/')
     else:
-        db.execute('insert into watch (userid, symbol) values (:userid, :symbol)',
-                   userid=session['user_id'], symbol=symbol)
-
+        print
+        db.execute('insert into Watch (userid, symbol) values (%s, %s)',(session['user_id'], symbol))
+        print(db)
+        dbcon.commit()
     return redirect('/watchlist')
 
 
+@app.route('/removefromwatch', methods=['GET', 'POST'])
+@login_required
+def remove():
+    symbol = request.form.get('symbol')
+    db.execute("DELETE FROM Watch WHERE userid = %s and symbol = %s", (session['user_id'], symbol))
+    dbcon.commit()
+    return redirect('/watchlist')
+
+
+
 if __name__ == '__main__':
-    app.run()
+    app.run(debug=True)
