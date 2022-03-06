@@ -2,10 +2,9 @@ import imp
 from helpers import lookup, usd
 
 
-def GetStocks(user_id, db):
+def GetWatchStocks(user_id, db):
     db.execute("SELECT symbol FROM Watch WHERE userid = %s",(user_id,))
     symbols = DbSelect(db)    
-    print(symbols)                 
     stocks = []
     for symbol in symbols:
         stock = lookup(symbol['symbol'])
@@ -29,6 +28,23 @@ def GetUserProtfolio(user_id, db):
             stocks.append(stock)
     return stocks
 
+def GetUserSymbols(user_id, db):
+    db.execute('select symbol, amount from Shares where userid = %s', (user_id,))
+    return DbSelect(db)
+
+def GetSymbolsData(symbols):
+    stocks = []
+    for symbol in symbols:
+        stock = lookup(symbol['symbol'])
+        stock["symbol"] = symbol['symbol']
+        stock["stock_count"] = symbol['amount']
+        if stock["stock_count"] > 0:
+            stock['price'] = stock["price"]
+            stock['worth'] = stock["stock_count"] * stock["price"]
+            stock['worthtext'] = usd(stock["stock_count"] * stock["price"])
+            stocks.append(stock)
+    return stocks
+    
 
 def MoneyInvested(list):
     stock_sum = 0

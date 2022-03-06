@@ -33,7 +33,7 @@ def login_required(f):
 
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        if session.get("user_id") is None:
+        if request.cookies.get('user') is '':
             return redirect("/login")
         return f(*args, **kwargs)
 
@@ -69,8 +69,7 @@ def lookup(symbol):
             "quote": quote,
             'primaryExchange': quote['primaryExchange'],
             'changePercent': quote['changePercent'],
-            'isUSMarketOpen': isopen(quote['isUSMarketOpen']),
-
+            'isUSMarketOpen': isopen(quote['isUSMarketOpen'])
         }
     except (KeyError, TypeError, ValueError):
         return None

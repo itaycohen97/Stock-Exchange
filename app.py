@@ -1,13 +1,10 @@
-from flask import Flask
-
-import mysql.connector
+import mysql.connector, datetime, json
 from dbmethods import *
 from flask import Flask, flash, redirect, render_template, request, session
 from flask_session import Session
 from tempfile import mkdtemp, gettempdir
 from werkzeug.exceptions import default_exceptions, HTTPException, InternalServerError
 from werkzeug.security import check_password_hash, generate_password_hash
-import datetime
 
 from helpers import apology, login_required, lookup, usd, Precent
 
@@ -18,6 +15,7 @@ app = Flask(__name__)
 
 # Ensure templates are auto-reloaded
 app.config["TEMPLATES_AUTO_RELOAD"] = True
+user = {}
 
 
 # Ensure responses aren't cached
@@ -55,15 +53,22 @@ dbcon.autocommit = True
 @app.route('/')
 @login_required
 def home():
-    return render_template('home.html', session=session)
+    global user
+    if not user:
+        user = json.loads(request.cookies.get("user"))
+    if "stocks" not in user:
+        user['stocks'] = GetSymbolsData(user['stocks_symbols'])
+    # stocks = json.loads(request.cookies.get("stocks"))
+    return render_template('home.html', user=user)
 
 
 
 @app.route('/watchlist')
 @login_required
 def watchlist():
-    session["watch_list"] = GetStocks(session['user_id'], db)
-    return render_template('watch_list.html', session=session)
+    global user
+    user['watch_list'] = GetWatchStocks(user['user_id'], db)
+    return render_template('watch_list.html', user=user)
 
 
 @app.route('/search', methods=['GET', 'POST'])
@@ -72,14 +77,15 @@ def search():
     if request.method == 'GET':
         return render_template('search.html')
     else:
-        session['last_search'] = lookup(request.form.get('search'))
-        return render_template('profile.html', session=session, stock=session['last_search'])
+        global user
+        user['last_search'] = lookup(request.form.get('search'))
+        return render_template('profile.html', user=user, stock=user['last_search'])
 
 
 @app.route('/test')
 def test():
-    session['user_id'] = 1
-    return render_template('home.html', session=session, search="h")
+    user['user_id'] = 1
+    return render_template('home.html', user=user, search="h")
 
 
 @app.route("/register", methods=['GET', 'POST'])
@@ -116,56 +122,68 @@ def register():
                            (new_username, hash, fullname))
                 dbcon.commit()
                 db.execute('select * from Users where username =%s', (new_username,))
-                user = DbSelect(db)
-                session["user_id"] = user[0]['id']
-                session["full_name"] = user[0]['fullname']
-                session["user_name"] = user[0]['username']
-                db.execute('select cash from Users where id = %s', (session["user_id"],))
+                userdata = DbSelect(db)
+                db.execute('select cash from Users where id = %s', (new_username,))
                 rows = DbSelect(db)
-                session["budget"] = usd(float(rows[0]['cash']))
-                return redirect("/")
+
+                user = {
+                    "user_id": userdata[0]['id'],
+                    "full_name": userdata[0]['fullname'],
+                    "user_name": userdata[0]['username'],
+                    "budget": usd(10000)
+                }
+                logged_in = redirect('/')
+                logged_in.set_cookie('user', json.dumps(user))
+                return logged_in
 
 
 @app.route("/buy", methods=["GET", "POST"])
 @login_required
 def buy():
+    global user
     if request.method == 'GET':
         return redirect('/')
     else:
         stock = lookup(request.form.get("symbol"))
         amount = float(request.form.get("amount"))
-        try_buy = BuyStocks(session['user_id'], stock, amount, db)
+        try_buy = BuyStocks(user['user_id'], stock, amount, db)
         if try_buy[0] is True:
             flash('Sold ' + str(amount) + ' ' + str(stock['symbol']) + ' stock.')
             dbcon.commit()
-            session["stocks"] = GetUserProtfolio(session['user_id'], db)
-            session["stocksmoney"] = MoneyInvested(session["stocks"])
-            db.execute('select cash from Users where id = %s', (session["user_id"],))
+            user['stocks_symbols'] = GetUserSymbols(user['user_id'], db)
+            user["stocks"] = GetSymbolsData(user['stocks_symbols'])
+            user["stocksmoneynondisplay"] = MoneyInvested(user["stocks"])
+            user["stocksmoney"] =usd(user["stocksmoneynondisplay"])
+            db.execute('select cash from Users where id = %s', (user["user_id"],))
             cash = DbSelect(db)
-            session["budget"] = usd(float(cash[0]['cash']))
+            user["budget"] = usd(float(cash[0]['cash']))
+            user['stocks'] = GetSymbolsData(user['stocks_symbols'])
             return redirect("/")
         else:
-            return render_template('home.html', error=try_buy[1], session=session)
+            return render_template('home.html', error=try_buy[1], user=user)
 
 
 @app.route("/sell", methods=["GET", "POST"])
 @login_required
 def sell():
+    global user
     if request.method == 'POST':
         symbol = request.form.get("symbol")
         amount = int(request.form.get("amount"))
-        try_sell = SellStocks(session["user_id"], symbol, amount, db)
+        try_sell = SellStocks(user["user_id"], symbol, amount, db)
         if try_sell[0] is True:
             flash('Sold ' + str(amount) + ' ' + str(symbol) + ' stock.')
-            session["stocks"] = GetUserProtfolio(session['user_id'], db)
-            dbcon.commit()
-            session["stocksmoney"] = MoneyInvested(session["stocks"])
-            db.execute('select cash from Users where id = %s', (session["user_id"],))
-            budget = DbSelect(db)
-            session["budget"] = usd(float(budget[0]['cash']))
+            user['stocks_symbols'] = GetUserSymbols(user['user_id'], db)
+            user["stocks"] = GetSymbolsData(user['stocks_symbols'])
+            user["stocksmoneynondisplay"] = MoneyInvested(user["stocks"])
+            user["stocksmoney"] =usd(user["stocksmoneynondisplay"])
+            db.execute('select cash from Users where id = %s', (user["user_id"],))
+            cash = DbSelect(db)
+            user["budget"] = usd(float(cash[0]['cash']))
+            user['stocks'] = GetSymbolsData(user['stocks_symbols'])
             return redirect("/")
         else:
-            return render_template('home.html', error=try_sell[1],session=session)
+            return render_template('home.html', error=try_sell[1],user=user)
     else:
         return redirect('/')
 
@@ -173,9 +191,9 @@ def sell():
 @login_required
 def history():
     # """Show history of transactions"""
-    db.execute('select * from Store where userid = %s', (session["user_id"],))
+    db.execute('select * from Store where userid = %s', (user["user_id"],))
     data = DbSelect(db)
-    return render_template("history.html", history=data, session=session)
+    return render_template("history.html", history=data, user=user)
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -199,26 +217,36 @@ def login():
 
         db.execute("SELECT * FROM Users WHERE username = %s",
                           (request.form.get("username"),))
-        user = DbSelect(db)
+        user_data = DbSelect(db)
         # Ensure username exists and password is correct
-        if len(user) != 1 or not check_password_hash(user[0]["hash"], request.form.get("password")):
+        if len(user_data) != 1 or not check_password_hash(user_data[0]["hash"], request.form.get("password")):
             return render_template("login.html", error='Invalid Username or Password')
 
         # Remember which user has logged in
-        session["user_id"] = user[0]["id"]
-        session["user_name"] = user[0]["username"]
-        session["full_name"] = user[0]["fullname"]
-        session["stocks"] = GetUserProtfolio(session['user_id'], db)
-        stockmoney = MoneyInvested(session["stocks"])
-        session["stocksmoney"] = usd(stockmoney)
-        db.execute('select cash from Users where id = %s', (session["user_id"],))
+        db.execute('select cash from Users where id = %s', (user_data[0]["id"],))
         budget = float(DbSelect(db)[0]['cash'])
-        session["budget"] = usd(budget)
+        stocks = GetUserProtfolio(user_data[0]["id"], db)
+        stockmoney = MoneyInvested(stocks)
         profit = (((budget+stockmoney)/10000)-1)*100
-        session['Profit'] = Precent(profit)
 
+        global user
+        user = {
+            "user_id":user_data[0]["id"],
+            "user_name": user_data[0]["username"],
+            "full_name": user_data[0]["fullname"],
+            "stocksmoneynondisplay": stockmoney,
+            "stocksmoney": usd(stockmoney),
+            "budget": usd(budget),
+            "Profit": Precent(profit),
+            "stocks_symbols": GetUserSymbols(user_data[0]["id"], db)
+        }
+        
+
+        logged_in = redirect('/')
+        logged_in.set_cookie('user', json.dumps(user))
+    
         # Redirect user to home page
-        return redirect("/")
+        return logged_in
 
     # User reached route via GET (as by clicking a link or via redirect)
     else:
@@ -230,8 +258,11 @@ def logout():
     """Log user out"""
 
     # Forget any user_id
-    session.clear()
+    if request.cookies.get('user'):
+        loggedout = redirect("/")
+        loggedout.set_cookie('user', '')
 
+        return loggedout
     # Redirect user to login form
     return redirect("/")
 
@@ -240,12 +271,12 @@ def logout():
 @login_required
 def add():
     symbol = request.form.get('symbol')
-    db.execute('select * from Watch where userid = %s and symbol = %s', (session['user_id'], symbol))
+    db.execute('select * from Watch where userid = %s and symbol = %s', (user['user_id'], symbol))
     check = DbSelect(db)
     if check == None or len(check) != 0:
         redirect('/')
     else:
-        db.execute('insert into Watch (userid, symbol) values (%s, %s)',(session['user_id'], symbol))
+        db.execute('insert into Watch (userid, symbol) values (%s, %s)',(user['user_id'], symbol))
         dbcon.commit()
     return redirect('/watchlist')
 
@@ -254,7 +285,7 @@ def add():
 @login_required
 def remove():
     symbol = request.form.get('symbol')
-    db.execute("DELETE FROM Watch WHERE userid = %s and symbol = %s", (session['user_id'], symbol))
+    db.execute("DELETE FROM Watch WHERE userid = %s and symbol = %s", (user['user_id'], symbol))
     dbcon.commit()
     return redirect('/watchlist')
 
