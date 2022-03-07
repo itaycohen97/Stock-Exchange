@@ -33,7 +33,7 @@ def login_required(f):
 
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        if request.cookies.get('user') is '':
+        if request.cookies.get('user') == '' or not request.cookies.get('user'):
             return redirect("/login")
         return f(*args, **kwargs)
 

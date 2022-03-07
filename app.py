@@ -15,7 +15,10 @@ app = Flask(__name__)
 
 # Ensure templates are auto-reloaded
 app.config["TEMPLATES_AUTO_RELOAD"] = True
-user = {}
+try:
+    user = json.loads(request.cookies.get("user"))
+except:
+    user = {}
 
 
 # Ensure responses aren't cached
@@ -191,7 +194,7 @@ def sell():
 @login_required
 def history():
     # """Show history of transactions"""
-    db.execute('select * from Store where userid = %s', (user["user_id"],))
+    db.execute('select * from Store where userid = %s order by Date Desc', (user["user_id"],))
     data = DbSelect(db)
     return render_template("history.html", history=data, user=user)
 
@@ -260,7 +263,7 @@ def logout():
     # Forget any user_id
     if request.cookies.get('user'):
         loggedout = redirect("/")
-        loggedout.set_cookie('user', '')
+        loggedout.delete_cookie('user')
 
         return loggedout
     # Redirect user to login form
