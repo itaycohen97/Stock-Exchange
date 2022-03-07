@@ -165,7 +165,9 @@ def buy():
             cash = DbSelect(db)
             user["budget"] = usd(float(cash[0]['cash']))
             user['stocks'] = GetSymbolsData(user['stocks_symbols'])
-            return redirect("/")
+            res = redirect("/")
+            res.set_cookie('user', json.dumps(user))
+            return res
         else:
             return render_template('home.html', error=try_buy[1], user=user)
 
@@ -189,7 +191,9 @@ def sell():
             cash = DbSelect(db)
             user["budget"] = usd(float(cash[0]['cash']))
             user['stocks'] = GetSymbolsData(user['stocks_symbols'])
-            return redirect("/")
+            res = redirect("/")
+            res.set_cookie('user', json.dumps(user))
+            return res
         else:
             return render_template('home.html', error=try_sell[1],user=user)
     else:
