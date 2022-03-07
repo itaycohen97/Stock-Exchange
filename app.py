@@ -1,3 +1,5 @@
+from getpass import getuser
+from glob import glob
 import mysql.connector, datetime, json
 from dbmethods import *
 from flask import Flask, flash, redirect, render_template, request, session
@@ -15,10 +17,7 @@ app = Flask(__name__)
 
 # Ensure templates are auto-reloaded
 app.config["TEMPLATES_AUTO_RELOAD"] = True
-try:
-    user = json.loads(request.cookies.get("user"))
-except:
-    user = {}
+
 
 
 # Ensure responses aren't cached
@@ -50,18 +49,18 @@ if (not dbcon):
 # cursor_class=MySQLCursorPrepared
 db = dbcon.cursor(buffered=True)
 dbcon.autocommit = True
+try:
+    user = json.loads(request.cookies.get("user"))
+except:
+    user = {}
 
 
 
 @app.route('/')
 @login_required
 def home():
-    global user
-    if not user:
-        user = json.loads(request.cookies.get("user"))
-    if "stocks" not in user:
-        user['stocks'] = GetSymbolsData(user['stocks_symbols'])
-    # stocks = json.loads(request.cookies.get("stocks"))
+    GetUser()
+    GetUserStocks()
     return render_template('home.html', user=user)
 
 
@@ -70,6 +69,7 @@ def home():
 @login_required
 def watchlist():
     global user
+    GetUser()
     user['watch_list'] = GetWatchStocks(user['user_id'], db)
     return render_template('watch_list.html', user=user)
 
@@ -77,9 +77,11 @@ def watchlist():
 @app.route('/search', methods=['GET', 'POST'])
 @login_required
 def search():
+    GetUser()
     if request.method == 'GET':
         return render_template('search.html')
     else:
+        global user
         user['last_search'] = lookup(request.form.get('search'))
         return render_template('profile.html', user=user, stock=user['last_search'])
 
@@ -194,6 +196,7 @@ def sell():
 @app.route("/history")
 @login_required
 def history():
+    GetUser()
     # """Show history of transactions"""
     db.execute('select * from Store where userid = %s', (user["user_id"],))
     data = DbSelect(db)
@@ -275,6 +278,7 @@ def logout():
 @app.route('/addwatchlist', methods=['GET', 'POST'])
 @login_required
 def add():
+    GetUser()
     symbol = request.form.get('symbol')
     db.execute('select * from Watch where userid = %s and symbol = %s', (user['user_id'], symbol))
     check = DbSelect(db)
@@ -289,11 +293,26 @@ def add():
 @app.route('/removefromwatch', methods=['GET', 'POST'])
 @login_required
 def remove():
+    GetUser()
     symbol = request.form.get('symbol')
     db.execute("DELETE FROM Watch WHERE userid = %s and symbol = %s", (user['user_id'], symbol))
     dbcon.commit()
     return redirect('/watchlist')
 
+def GetUser():
+    global user
+    try:
+        user = json.loads(request.cookies.get("user"))
+    except:
+        user = {}
+
+def GetUserStocks():
+    global user
+    if "stocks" not in user:
+        try:
+            user['stocks'] = GetSymbolsData(user['stocks_symbols'])
+        except:
+            user['stocks'] = []
 
 
 if __name__ == '__main__':
