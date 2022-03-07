@@ -150,6 +150,7 @@ def buy():
     if request.method == 'GET':
         return redirect('/')
     else:
+        GetUser()
         stock = lookup(request.form.get("symbol"))
         amount = float(request.form.get("amount"))
         try_buy = BuyStocks(user['user_id'], stock, amount, db)
@@ -174,6 +175,7 @@ def buy():
 def sell():
     global user
     if request.method == 'POST':
+        GetUser()
         symbol = request.form.get("symbol")
         amount = int(request.form.get("amount"))
         try_sell = SellStocks(user["user_id"], symbol, amount, db)
@@ -198,7 +200,7 @@ def sell():
 def history():
     GetUser()
     # """Show history of transactions"""
-    db.execute('select * from Store where userid = %s', (user["user_id"],))
+    db.execute('select * from Store where userid = %s order by date desc', (user["user_id"],))
     data = DbSelect(db)
     return render_template("history.html", history=data, user=user)
 
