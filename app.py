@@ -130,7 +130,9 @@ def register():
                     "user_id": userdata[0]['id'],
                     "full_name": userdata[0]['fullname'],
                     "user_name": userdata[0]['username'],
-                    "budget": usd(10000)
+                    "budget": usd(10000),
+                    "stocks_symbols": []
+
                 }
                 logged_in = redirect('/')
                 logged_in.set_cookie('user', json.dumps(user))
@@ -256,7 +258,8 @@ def login():
 @app.route("/logout")
 def logout():
     """Log user out"""
-
+    global user
+    user = {}
     # Forget any user_id
     if request.cookies.get('user'):
         loggedout = redirect("/")
