@@ -1,5 +1,3 @@
-from getpass import getuser
-from glob import glob
 import mysql.connector, datetime, json
 from dbmethods import *
 from flask import Flask, flash, redirect, render_template, request, session
@@ -134,10 +132,15 @@ def register():
                     "user_id": userdata[0]['id'],
                     "full_name": userdata[0]['fullname'],
                     "user_name": userdata[0]['username'],
+                    "budgetnondisplay":10000,
                     "budget": usd(10000),
-                    "stocks_symbols": []
-
+                    "stocks_symbols": [],
+                    "profitnondisplay":0,
+                    "profit": Precent(0),
+                    "stocksmoneynondisplay":0,
+                    "stocksmoney":usd(0)
                 }
+
                 logged_in = redirect('/')
                 logged_in.set_cookie('user', json.dumps(user))
                 return logged_in
@@ -146,16 +149,15 @@ def register():
 @app.route("/buy", methods=["GET", "POST"])
 @login_required
 def buy():
-    global user
     if request.method == 'GET':
         return redirect('/')
     else:
+        global user
         GetUser()
         stock = lookup(request.form.get("symbol"))
         amount = float(request.form.get("amount"))
         try_buy = BuyStocks(user['user_id'], stock, amount, db)
         if try_buy[0] is True:
-            flash('Sold ' + str(amount) + ' ' + str(stock['symbol']) + ' stock.')
             dbcon.commit()
             user['stocks_symbols'] = GetUserSymbols(user['user_id'], db)
             user["stocksmoney"] =usd(user["stocksmoneynondisplay"])
@@ -166,6 +168,7 @@ def buy():
             user.pop("stocks")
             res = redirect("/")
             res.set_cookie('user', json.dumps(user))
+            print(user)
             return res
         else:
             return render_template('home.html', error=try_buy[1], user=user)
@@ -249,7 +252,8 @@ def login():
             "stocksmoney": usd(stockmoney),
             "budgetnondisplay":budget,
             "budget": usd(budget),
-            "Profit": Precent(profit),
+            "profitnondisplay":profit,
+            "profit": Precent(profit),
             "stocks_symbols": GetUserSymbols(user_data[0]["id"], db)
         }
         

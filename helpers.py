@@ -1,11 +1,10 @@
-API_KEY = "pk_fc0f1724e53f4974a97ee52ae903b2ea"
 import os
 import requests
 import urllib.parse
-
 from flask import redirect, render_template, request, session
 from functools import wraps
 
+API_KEY = os.environ.get('API_KEY')
 
 def apology(message, code=400):
     """Render message as an apology to user."""
