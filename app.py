@@ -15,7 +15,10 @@ app = Flask(__name__)
 
 # Ensure templates are auto-reloaded
 app.config["TEMPLATES_AUTO_RELOAD"] = True
-user = {}
+try:
+    user = json.loads(request.cookies.get("user"))
+except:
+    user = {}
 
 
 # Ensure responses aren't cached
@@ -77,7 +80,6 @@ def search():
     if request.method == 'GET':
         return render_template('search.html')
     else:
-        global user
         user['last_search'] = lookup(request.form.get('search'))
         return render_template('profile.html', user=user, stock=user['last_search'])
 
