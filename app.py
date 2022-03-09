@@ -1,4 +1,4 @@
-import mysql.connector, datetime, json
+import mysql.connector, json, os
 from dbmethods import *
 from flask import Flask, flash, redirect, render_template, request
 from werkzeug.exceptions import default_exceptions, HTTPException, InternalServerError
@@ -28,11 +28,11 @@ def after_request(response):
 app.jinja_env.filters["usd"] = usd
 
 
-# Configure CS50 Library to use SQLite database
-server = "sql6.freemysqlhosting.net"
-username = "sql6476401"
-password = "gpGZg7Gw2b"
-dbname = "sql6476401"
+server = os.environ.get('DbServer')
+username = os.environ.get('DbUserName')
+password = os.environ.get('DbPassword')
+dbname = os.environ.get('DbName')
+
 dbcon = mysql.connector.connect(host=server, user=username, password=password, db=dbname)
 if (not dbcon):
     print("error")
