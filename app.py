@@ -152,16 +152,13 @@ def buy():
         try_buy = BuyStocks(user['user_id'], stock, amount, db)
         if try_buy[0] is True:
             dbcon.commit()
-            user['stocks_symbols'] = GetUserSymbols(user['user_id'], db)
+            # user['stocks_symbols'] = GetUserSymbols(user['user_id'], db)
             user["stocksmoney"] =usd(user["stocksmoneynondisplay"])
             db.execute('select cash from Users where id = %s', (user["user_id"],))
-            cash = DbSelect(db)
-            user["budget"] = usd(float(cash[0]['cash']))
-            user['stocks'] = GetSymbolsData(user['stocks_symbols'])
+            GetUserStocks(float(DbSelect(db)[0]['cash']))
             user.pop("stocks")
             res = redirect("/")
             res.set_cookie('user', json.dumps(user))
-            print(user)
             return res
         else:
             return render_template('home.html', error=try_buy[1], user=user)
@@ -177,13 +174,9 @@ def sell():
         amount = int(request.form.get("amount"))
         try_sell = SellStocks(user["user_id"], symbol, amount, db)
         if try_sell[0] is True:
-            flash('Sold ' + str(amount) + ' ' + str(symbol) + ' stock.')
-            user['stocks_symbols'] = GetUserSymbols(user['user_id'], db)
-            user["stocksmoney"] =usd(user["stocksmoneynondisplay"])
             db.execute('select cash from Users where id = %s', (user["user_id"],))
             cash = DbSelect(db)
-            user["budget"] = usd(float(cash[0]['cash']))
-            user['stocks'] = GetSymbolsData(user['stocks_symbols'])
+            GetUserStocks(float(cash[0]['cash']))
             user.pop("stocks")
             res = redirect("/")
             res.set_cookie('user', json.dumps(user))
@@ -229,7 +222,8 @@ def login():
 
         # Remember which user has logged in
         db.execute('select cash from Users where id = %s', (user_data[0]["id"],))
-        budget = float(DbSelect(db)[0]['cash'])
+        temp = DbSelect(db)
+        budget = float(temp[0]['cash'])
         stocks = GetUserProtfolio(user_data[0]["id"], db)
         stockmoney = MoneyInvested(stocks)
         profit = (((budget+stockmoney)/10000)-1)*100
@@ -306,10 +300,15 @@ def GetUser():
     except:
         user = {}
 
-def GetUserStocks():
+def GetUserStocks(budget = None):
     global user
     user = json.loads(request.cookies.get("user"))
     try:
+        if budget is not None:
+            user['budgetnondisplay'] = budget
+            user['budget'] = usd(budget)
+
+        user['stocks_symbols'] = GetUserSymbols(user['user_id'], db)
         user['stocks'] = GetSymbolsData(user['stocks_symbols'])
         user['stocksmoneynondisplay']=MoneyInvested(user['stocks'])
         user['stocksmoney']=usd(user['stocksmoneynondisplay'])

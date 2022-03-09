@@ -118,6 +118,7 @@ def BuyStocks(user_id, stock, amount, db):
 def DbSelect(cursor):
     list = []
     for row in cursor:
+        print(row)
         result = dict(zip(cursor.column_names,row))
         for key in result:
             if issubclass(type(result[key]), bytearray):
