@@ -26,7 +26,6 @@ def apology(message, code=400):
 def login_required(f):
     """
     Decorate routes to require login.
-
     http://flask.pocoo.org/docs/1.0/patterns/viewdecorators/
     """
 
@@ -44,9 +43,8 @@ def lookup(symbol):
 
     # Contact API
     try:
-        api_key = "pk_fc0f1724e53f4974a97ee52ae903b2ea"
         response = requests.get(
-            f"https://cloud.iexapis.com/stable/stock/{urllib.parse.quote_plus(symbol)}/quote?token={api_key}")
+            f"https://cloud.iexapis.com/stable/stock/{urllib.parse.quote_plus(symbol)}/quote?token={API_KEY}")
         response.raise_for_status()
     except requests.RequestException:
         return None
